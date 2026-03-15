@@ -428,7 +428,7 @@
       const now = new Date();
       const secondsUntilNextMinute = 60 - now.getSeconds();
       setTimeout(function() {
-        location.reload();
+        location.href = location.href.split("?")[0] + "?t=" + Date.now();
       }, secondsUntilNextMinute * 1000);
     }
     scheduleRefresh();
