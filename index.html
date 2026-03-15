@@ -422,6 +422,16 @@
     }
 
     render();
+
+    // Refresh automatico ogni minuto al secondo 0
+    function scheduleRefresh() {
+      const now = new Date();
+      const secondsUntilNextMinute = 60 - now.getSeconds();
+      setTimeout(function() {
+        location.reload();
+      }, secondsUntilNextMinute * 1000);
+    }
+    scheduleRefresh();
   </script>
 </body>
 </html>
