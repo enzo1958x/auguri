@@ -2,6 +2,9 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>...Aspetta...</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet"/>
@@ -361,11 +364,11 @@
       const min = now.getMinutes();
       const sec = now.getSeconds();
 
-      const isMarch16 = (y === 2026 && m === 2 && d === 15); // TEST
+      const isMarch16 = (y === 2026 && m === 2 && d === 16);
       const isMarch17 = (y === 2026 && m === 2 && d === 17);
       const isBefore16 = (y < 2026) ||
                          (y === 2026 && m < 2) ||
-                         (y === 2026 && m === 2 && d < 15); // TEST
+                         (y === 2026 && m === 2 && d < 16);
       const isAfter17  = (y > 2026) ||
                          (y === 2026 && m > 2) ||
                          (y === 2026 && m === 2 && d > 17);
