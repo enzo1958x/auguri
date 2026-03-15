@@ -326,8 +326,6 @@
       <div class="caption-bar">— Manca ancora un po' —</div>
     </div>
 
-    <div style="position:fixed;bottom:8px;right:12px;font-size:11px;color:#7a5c30;font-family:monospace;opacity:0.6;" id="refresh-counter"></div>
-
     <div class="countdown-wrap">
       <div class="countdown-label">Conto alla rovescia</div>
       <div id="countdown">00<span class="tick">:</span>00<span class="tick">:</span>00</div>
@@ -423,14 +421,14 @@
       }
     }
 
+    // Se non c'è il parametro ?t= forza subito un reload fresco
+    if (location.search.indexOf('t=') === -1) {
+      location.href = location.href.split("?")[0] + "?t=" + Date.now();
+    }
+
     render();
 
     // Refresh automatico ogni minuto al secondo 0
-    const refreshCount = parseInt(sessionStorage.getItem('refreshCount') || '0') + 1;
-    sessionStorage.setItem('refreshCount', refreshCount);
-    const el = document.getElementById('refresh-counter');
-    if (el) el.textContent = 'refresh #' + refreshCount;
-
     function scheduleRefresh() {
       const now = new Date();
       const secondsUntilNextMinute = 60 - now.getSeconds();
