@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>...Aspetta...</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1a1008;
+      --paper: #f5edd6;
+      --aged: #c9a96e;
+      --shadow: #7a5c30;
+    }
+
+    body {
+      background: var(--paper);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier Prime', monospace;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Texture grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.4;
+    }
+
+    /* ───── VIGNETTA ───── */
+    #waiting-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      animation: fadeIn 1.2s ease forwards;
+    }
+
+    .comic-frame {
+      border: 4px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--shadow);
+      background: white;
+      position: relative;
+      width: min(520px, 92vw);
+    }
+
+    /* Panel interno della vignetta */
+    .panel {
+      padding: 28px 28px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 3px solid var(--ink);
+    }
+
+    /* SVG illustrazione */
+    .illustration {
+      width: 100%;
+      max-width: 320px;
+    }
+
+    /* Fumetto di testo */
+    .speech-bubble {
+      position: relative;
+      background: white;
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      padding: 14px 20px;
+      width: 100%;
+      text-align: center;
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 9px solid transparent;
+      border-top-color: var(--ink);
+    }
+    .speech-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: white;
+      z-index: 1;
+    }
+    .speech-bubble p {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 3vw, 1.25rem);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .speech-bubble strong {
+      font-style: normal;
+      font-weight: 700;
+      display: block;
+      margin-top: 4px;
+      font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+    }
+
+    /* Caption bar in fondo alla vignetta */
+    .caption-bar {
+      background: var(--paper);
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--shadow);
+      border-top: 2px solid var(--ink);
+    }
+
+    /* Countdown */
+    .countdown-wrap {
+      margin-top: 24px;
+      text-align: center;
+    }
+    .countdown-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--shadow);
+      margin-bottom: 6px;
+    }
+    #countdown {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 7vw, 3rem);
+      color: var(--ink);
+      letter-spacing: 0.05em;
+    }
+
+    /* ───── FOTO ───── */
+    #photo-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      animation: fadeIn 1.4s ease forwards;
+    }
+
+    .photo-frame {
+      border: 6px solid var(--ink);
+      box-shadow: 10px 10px 0 var(--shadow);
+      background: white;
+      padding: 12px 12px 48px;
+      position: relative;
+      width: min(500px, 92vw);
+    }
+
+    .photo-frame img {
+      width: 100%;
+      display: block;
+    }
+
+    .photo-caption {
+      position: absolute;
+      bottom: 10px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.85rem;
+      color: var(--shadow);
+      letter-spacing: 0.06em;
+    }
+
+    .reveal-text {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      color: var(--ink);
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+    .reveal-text em {
+      color: var(--shadow);
+      font-style: italic;
+    }
+
+    /* ───── AFTER ───── */
+    #after-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: fadeIn 1s ease forwards;
+      text-align: center;
+    }
+    #after-screen p {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      color: var(--shadow);
+      font-style: italic;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Clock tick animation */
+    .tick { animation: tick 1s steps(1) infinite; }
+    @keyframes tick {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SCHERMATA ATTESA -->
+  <div id="waiting-screen">
+    <div class="comic-frame">
+      <div class="panel">
+
+        <!-- Illustrazione SVG: persona annoiata che guarda l'orologio -->
+        <svg class="illustration" viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Sfondo stanza -->
+          <rect x="0" y="150" width="320" height="70" fill="#e8dbc4" stroke="#1a1008" stroke-width="2"/>
+          <!-- Sedia -->
+          <rect x="100" y="110" width="120" height="12" rx="4" fill="#8B6914" stroke="#1a1008" stroke-width="2"/>
+          <rect x="110" y="122" width="10" height="30" fill="#8B6914" stroke="#1a1008" stroke-width="1.5"/>
+          <rect x="200" y="122" width="10" height="30" fill="#8B6914" stroke="#1a1008" stroke-width="1.5"/>
+          <rect x="100" y="90" width="10" height="40" rx="3" fill="#8B6914" stroke="#1a1008" stroke-width="1.5"/>
+          <rect x="210" y="90" width="10" height="40" rx="3" fill="#8B6914" stroke="#1a1008" stroke-width="1.5"/>
+
+          <!-- Corpo persona -->
+          <ellipse cx="160" cy="130" rx="28" ry="20" fill="#f0d090" stroke="#1a1008" stroke-width="2"/>
+          <!-- Gambe -->
+          <line x1="148" y1="148" x2="148" y2="175" stroke="#1a1008" stroke-width="5" stroke-linecap="round"/>
+          <line x1="172" y1="148" x2="172" y2="175" stroke="#1a1008" stroke-width="5" stroke-linecap="round"/>
+          <!-- Piedi -->
+          <ellipse cx="148" cy="178" rx="10" ry="5" fill="#4a3a2a" stroke="#1a1008" stroke-width="1.5"/>
+          <ellipse cx="172" cy="178" rx="10" ry="5" fill="#4a3a2a" stroke="#1a1008" stroke-width="1.5"/>
+
+          <!-- Braccio sinistro appoggiato -->
+          <path d="M 132 120 Q 110 130 105 115" stroke="#1a1008" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <!-- Braccio destro con orologio -->
+          <path d="M 188 120 Q 215 115 220 100" stroke="#1a1008" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+          <!-- Testa -->
+          <circle cx="160" cy="85" r="30" fill="#fce8b0" stroke="#1a1008" stroke-width="2.5"/>
+          <!-- Capelli -->
+          <path d="M 130 80 Q 140 55 160 55 Q 180 55 190 80" fill="#3a2a10" stroke="#1a1008" stroke-width="1.5"/>
+          <!-- Occhio sinistro (semichiuso, annoiato) -->
+          <ellipse cx="150" cy="84" rx="6" ry="3" fill="#1a1008"/>
+          <line x1="144" y1="78" x2="156" y2="80" stroke="#1a1008" stroke-width="2" stroke-linecap="round"/>
+          <!-- Occhio destro (stesso) -->
+          <ellipse cx="170" cy="84" rx="6" ry="3" fill="#1a1008"/>
+          <line x1="164" y1="78" x2="176" y2="80" stroke="#1a1008" stroke-width="2" stroke-linecap="round"/>
+          <!-- Bocca annoiata -->
+          <path d="M 152 96 Q 160 93 168 96" stroke="#1a1008" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+          <!-- Orologio da polso -->
+          <rect x="214" y="93" width="16" height="14" rx="3" fill="white" stroke="#1a1008" stroke-width="2"/>
+          <circle cx="222" cy="100" r="5" fill="white" stroke="#1a1008" stroke-width="1.2"/>
+          <!-- Lancette orologio -->
+          <line x1="222" y1="100" x2="222" y2="96" stroke="#1a1008" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="222" y1="100" x2="225" y2="102" stroke="#1a1008" stroke-width="1.2" stroke-linecap="round"/>
+
+          <!-- Linee "zzzz" sonnolenza / noia -->
+          <text x="60" y="70" font-family="Georgia" font-size="14" fill="#c9a96e" transform="rotate(-15,60,70)">z</text>
+          <text x="45" y="52" font-family="Georgia" font-size="18" fill="#c9a96e" transform="rotate(-15,45,52)">z</text>
+          <text x="28" y="30" font-family="Georgia" font-size="22" fill="#c9a96e" transform="rotate(-15,28,30)">z</text>
+
+          <!-- Orologio da muro -->
+          <circle cx="270" cy="45" r="28" fill="white" stroke="#1a1008" stroke-width="2.5"/>
+          <circle cx="270" cy="45" r="2" fill="#1a1008"/>
+          <!-- Segni ore -->
+          <line x1="270" y1="20" x2="270" y2="25" stroke="#1a1008" stroke-width="2"/>
+          <line x1="270" y1="65" x2="270" y2="70" stroke="#1a1008" stroke-width="2"/>
+          <line x1="295" y1="45" x2="290" y2="45" stroke="#1a1008" stroke-width="2"/>
+          <line x1="245" y1="45" x2="250" y2="45" stroke="#1a1008" stroke-width="2"/>
+          <!-- Lancetta minuti (verso le 12) -->
+          <line x1="270" y1="45" x2="270" y2="24" stroke="#1a1008" stroke-width="2" stroke-linecap="round"/>
+          <!-- Lancetta ore (verso le 11) -->
+          <line x1="270" y1="45" x2="260" y2="30" stroke="#1a1008" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+
+        <!-- Fumetto -->
+        <div class="speech-bubble">
+          <p>
+            Pazienza....
+            <strong>Non è ancora arrivata l'ora!</strong>
+          </p>
+        </div>
+
+      </div>
+      <div class="caption-bar">— Manca ancora un po' —</div>
+    </div>
+
+    <div class="countdown-wrap">
+      <div class="countdown-label">Conto alla rovescia</div>
+      <div id="countdown">00<span class="tick">:</span>00<span class="tick">:</span>00</div>
+    </div>
+  </div>
+
+  <!-- SCHERMATA FOTO (16–17 marzo 2026) -->
+  <div id="photo-screen">
+    <div class="reveal-text">🎉 <em>Finalmente ci siamo!</em> 🎉</div>
+    <div class="photo-frame">
+      <img src="foto.jpg" alt="La foto del grande momento" />
+      <div class="photo-caption">16 · III · 2026</div>
+    </div>
+  </div>
+
+  <!-- SCHERMATA POST (dopo il 17 marzo 2026) -->
+  <div id="after-screen">
+    <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="38" fill="none" stroke="#c9a96e" stroke-width="3"/>
+      <path d="M20 42 Q40 58 60 42" stroke="#1a1008" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="28" cy="32" r="4" fill="#1a1008"/>
+      <circle cx="52" cy="32" r="4" fill="#1a1008"/>
+    </svg>
+    <p>Il momento è già passato...<br/>ma il ricordo resta 🌸</p>
+  </div>
+
+  <script>
+    function getState() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth(); // 0-based: marzo = 2
+      const d = now.getDate();
+      const h = now.getHours();
+      const min = now.getMinutes();
+      const sec = now.getSeconds();
+
+      const isMarch16 = (y === 2026 && m === 2 && d === 16);
+      const isMarch17 = (y === 2026 && m === 2 && d === 17);
+      const isBefore16 = (y < 2026) ||
+                         (y === 2026 && m < 2) ||
+                         (y === 2026 && m === 2 && d < 16);
+      const isAfter17  = (y > 2026) ||
+                         (y === 2026 && m > 2) ||
+                         (y === 2026 && m === 2 && d > 17);
+
+      if (isMarch16 || isMarch17) return 'photo';
+      if (isAfter17) return 'after';
+
+      // Siamo prima del 16 marzo 2026
+      // Mostra vignetta: se è il 15 marzo e sono le 00:00–23:59 → vignetta
+      // (in generale: tutto il tempo prima del 16/3/2026 00:00)
+      return 'waiting';
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function updateCountdown() {
+      const now = new Date();
+      const target = new Date(2026, 2, 16, 0, 0, 0); // 16 marzo 2026 00:00:00
+      const diff = target - now;
+      if (diff <= 0) { render(); return; }
+      const totalSec = Math.floor(diff / 1000);
+      const hh = Math.floor(totalSec / 3600);
+      const mm = Math.floor((totalSec % 3600) / 60);
+      const ss = totalSec % 60;
+      const el = document.getElementById('countdown');
+      const colon = '<span class="tick">:</span>';
+      if (hh >= 24) {
+        const days = Math.floor(hh / 24);
+        const remH = hh % 24;
+        el.innerHTML = `${days}g ${pad(remH)}${colon}${pad(mm)}${colon}${pad(ss)}`;
+      } else {
+        el.innerHTML = `${pad(hh)}${colon}${pad(mm)}${colon}${pad(ss)}`;
+      }
+    }
+
+    function render() {
+      const state = getState();
+      document.getElementById('waiting-screen').style.display = 'none';
+      document.getElementById('photo-screen').style.display   = 'none';
+      document.getElementById('after-screen').style.display   = 'none';
+
+      if (state === 'waiting') {
+        document.getElementById('waiting-screen').style.display = 'flex';
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+      } else if (state === 'photo') {
+        document.getElementById('photo-screen').style.display = 'flex';
+      } else {
+        document.getElementById('after-screen').style.display = 'flex';
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
