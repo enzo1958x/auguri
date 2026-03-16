@@ -158,31 +158,42 @@
       align-items: center;
       gap: 20px;
       animation: fadeIn 1.4s ease forwards;
+      text-align: center;
     }
 
     .photo-frame {
-      border: 6px solid var(--ink);
-      box-shadow: 10px 10px 0 var(--shadow);
-      background: white;
-      padding: 12px 12px 48px;
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      padding: 0 0 48px;
       position: relative;
       width: min(500px, 92vw);
+      overflow: visible;
     }
 
     .photo-frame img {
       width: 100%;
       display: block;
+      background: transparent;
+      filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.28));
     }
 
     .photo-caption {
       position: absolute;
-      bottom: 10px;
-      left: 0; right: 0;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 28px);
       text-align: center;
       font-family: 'Courier Prime', monospace;
       font-size: 0.85rem;
-      color: var(--shadow);
+      color: #f6dfaa;
       letter-spacing: 0.06em;
+      background: rgba(10, 10, 26, 0.78);
+      border: 1px solid rgba(240, 208, 144, 0.38);
+      border-radius: 999px;
+      padding: 8px 14px;
+      backdrop-filter: blur(8px);
     }
 
     .auguri-text {
@@ -202,6 +213,18 @@
       font-weight: 700;
       letter-spacing: 0.04em;
       margin-top: 4px;
+    }
+
+    @media (max-width: 640px) {
+      .photo-frame {
+        padding: 0 0 52px;
+      }
+
+      .photo-caption {
+        width: calc(100% - 20px);
+        font-size: 0.76rem;
+        letter-spacing: 0.04em;
+      }
     }
 
     .reveal-text {
@@ -650,9 +673,6 @@
       if (auguri) auguri.style.color = '#f0d090';
       if (firme) firme.style.color = '#ffffff';
       if (reveal) { reveal.style.color = '#ffffff'; reveal.querySelector('em').style.color = '#f0d090'; }
-      // Cornice foto
-      const frame = document.querySelector('.photo-frame');
-      if (frame) frame.style.borderColor = '#f0d090';
       animate();
       // Tre razzi subito
       launchRocket(); 
