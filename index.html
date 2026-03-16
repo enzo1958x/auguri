@@ -215,6 +215,36 @@
       margin-top: 4px;
     }
 
+
+    .music-hint {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(240, 208, 144, 0.42);
+      background: rgba(10, 10, 26, 0.72);
+      color: #f6dfaa;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.96;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .music-hint.is-hidden {
+      opacity: 0;
+      transform: translateX(-50%) translateY(8px);
+      pointer-events: none;
+    }
+
     @media (max-width: 640px) {
       .photo-frame {
         padding: 0 0 52px;
@@ -366,6 +396,11 @@
       <div class="photo-caption">16 · III · 2026</div>
     </div>
     <div class="firme" id="firme-text">Scopez, Luca ed Enzo</div>
+    <div class="music-hint" id="music-hint">Tocca per la musica</div>
+    <audio id="birthday-song" preload="auto" playsinline>
+      <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/0/02/Happy_Birthday_to_You.ogg/Happy_Birthday_to_You.ogg.mp3" type="audio/mpeg">
+      <source src="https://upload.wikimedia.org/wikipedia/commons/0/02/Happy_Birthday_to_You.ogg" type="audio/ogg">
+    </audio>
   </div>
 
   <!-- SCHERMATA POST (dopo il 17 marzo 2026) -->
@@ -409,6 +444,50 @@
 
     function pad(n) { return String(n).padStart(2, '0'); }
 
+    const birthdaySong = document.getElementById('birthday-song');
+    const musicHint = document.getElementById('music-hint');
+    let photoMusicArmed = false;
+
+    function setMusicHintVisible(visible) {
+      if (!musicHint) return;
+      musicHint.classList.toggle('is-hidden', !visible);
+    }
+
+    async function attemptBirthdaySong() {
+      if (!birthdaySong) return;
+      birthdaySong.currentTime = 0;
+      birthdaySong.volume = 0.8;
+      try {
+        await birthdaySong.play();
+        setMusicHintVisible(false);
+      } catch (err) {
+        setMusicHintVisible(true);
+        return;
+      }
+    }
+
+    function stopBirthdaySong() {
+      if (!birthdaySong) return;
+      birthdaySong.pause();
+      birthdaySong.currentTime = 0;
+      setMusicHintVisible(true);
+    }
+
+
+    function armPhotoMusic() {
+      if (photoMusicArmed) return;
+      photoMusicArmed = true;
+      const startOnFirstGesture = async function() {
+        document.removeEventListener('pointerdown', startOnFirstGesture);
+        document.removeEventListener('keydown', startOnFirstGesture);
+        if (document.getElementById('photo-screen').style.display === 'flex') {
+          await attemptBirthdaySong();
+        }
+      };
+      document.addEventListener('pointerdown', startOnFirstGesture, { once: true });
+      document.addEventListener('keydown', startOnFirstGesture, { once: true });
+    }
+
     function updateCountdown() {
       const now = new Date();
       const target = new Date(2026, 2, 16, 0, 0, 0); // 16 marzo 2026 00:00:00
@@ -436,13 +515,19 @@
       document.getElementById('after-screen').style.display   = 'none';
 
       if (state === 'waiting') {
+        stopBirthdaySong();
+        photoMusicArmed = false;
         document.getElementById('waiting-screen').style.display = 'flex';
         updateCountdown();
         setInterval(updateCountdown, 1000);
       } else if (state === 'photo') {
         document.getElementById('photo-screen').style.display = 'flex';
-        setTimeout(function(){ if(window.startFireworks) window.startFireworks(); }, 500);
+        setMusicHintVisible(true);
+        if (window.startFireworks) window.startFireworks();
+        armPhotoMusic();
       } else {
+        stopBirthdaySong();
+        photoMusicArmed = false;
         document.getElementById('after-screen').style.display = 'flex';
       }
     }
@@ -686,6 +771,7 @@
     window.addEventListener('load', function() {
       if (document.getElementById('photo-screen').style.display === 'flex') {
         window.startFireworks();
+        armPhotoMusic();
       }
     });
   })();
