@@ -538,16 +538,6 @@
     }
 
     render();
-
-    // Refresh automatico ogni minuto al secondo 0
-    function scheduleRefresh() {
-      const now = new Date();
-      const secondsUntilNextMinute = 60 - now.getSeconds();
-      setTimeout(function() {
-        location.href = location.href.split("?")[0] + "?t=" + Date.now();
-      }, secondsUntilNextMinute * 1000);
-    }
-    scheduleRefresh();
   </script>
 
 
