@@ -415,31 +415,18 @@
   </div>
 
   <script>
+    function getNextTargetDate(fromDate = new Date()) {
+      const y = fromDate.getFullYear();
+      const targetThisYear = new Date(y, 2, 16, 0, 0, 0); // 16 marzo ore 00:00
+      return fromDate < targetThisYear
+        ? targetThisYear
+        : new Date(y + 1, 2, 16, 0, 0, 0);
+    }
+
     function getState() {
       const now = new Date();
-      const y = now.getFullYear();
-      const m = now.getMonth(); // 0-based: marzo = 2
-      const d = now.getDate();
-      const h = now.getHours();
-      const min = now.getMinutes();
-      const sec = now.getSeconds();
-
-      const isMarch16 = (y === 2026 && m === 2 && d === 16);
-      const isMarch17 = (y === 2026 && m === 2 && d === 17);
-      const isBefore16 = (y < 2026) ||
-                         (y === 2026 && m < 2) ||
-                         (y === 2026 && m === 2 && d < 16);
-      const isAfter17  = (y > 2026) ||
-                         (y === 2026 && m > 2) ||
-                         (y === 2026 && m === 2 && d > 17);
-
-      if (isMarch16 || isMarch17) return 'photo';
-      if (isAfter17) return 'after';
-
-      // Siamo prima del 16 marzo 2026
-      // Mostra vignetta: se è il 15 marzo e sono le 00:00–23:59 → vignetta
-      // (in generale: tutto il tempo prima del 16/3/2026 00:00)
-      return 'waiting';
+      const isMarch16 = (now.getMonth() === 2 && now.getDate() === 16);
+      return isMarch16 ? 'photo' : 'waiting';
     }
 
     function pad(n) { return String(n).padStart(2, '0'); }
@@ -488,9 +475,11 @@
       document.addEventListener('keydown', startOnFirstGesture, { once: true });
     }
 
+    let countdownInterval = null;
+
     function updateCountdown() {
       const now = new Date();
-      const target = new Date(2026, 2, 16, 0, 0, 0); // 16 marzo 2026 00:00:00
+      const target = getNextTargetDate(now);
       const diff = target - now;
       if (diff <= 0) { render(); return; }
       const totalSec = Math.floor(diff / 1000);
@@ -514,21 +503,22 @@
       document.getElementById('photo-screen').style.display   = 'none';
       document.getElementById('after-screen').style.display   = 'none';
 
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+
       if (state === 'waiting') {
         stopBirthdaySong();
         photoMusicArmed = false;
         document.getElementById('waiting-screen').style.display = 'flex';
         updateCountdown();
-        setInterval(updateCountdown, 1000);
+        countdownInterval = setInterval(updateCountdown, 1000);
       } else if (state === 'photo') {
         document.getElementById('photo-screen').style.display = 'flex';
         setMusicHintVisible(true);
         if (window.startFireworks) window.startFireworks();
         armPhotoMusic();
-      } else {
-        stopBirthdaySong();
-        photoMusicArmed = false;
-        document.getElementById('after-screen').style.display = 'flex';
       }
     }
 
