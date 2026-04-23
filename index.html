@@ -417,7 +417,7 @@
   <script>
     function getNextTargetDate(fromDate = new Date()) {
       const y = fromDate.getFullYear();
-      const targetThisYear = new Date(y, 2, 16, 0, 0, 0); // 16 marzo ore 00:00
+      const targetThisYear = new Date(y, 3, 23, 0, 0, 0); // 23 aprile ore 00:00
       return fromDate < targetThisYear
         ? targetThisYear
         : new Date(y + 1, 2, 16, 0, 0, 0);
@@ -425,7 +425,7 @@
 
     function getState() {
       const now = new Date();
-      const isMarch16 = (now.getMonth() === 2 && now.getDate() === 16);
+      const isMarch16 = (now.getMonth() === 3 && now.getDate() === 23);
       return isMarch16 ? 'photo' : 'waiting';
     }
 
